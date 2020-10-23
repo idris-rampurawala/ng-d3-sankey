@@ -1,0 +1,15 @@
+.user-flow {
+  .scroll-container {
+    position: relative;
+    background-color: #fff;
+    ::ng-deep {
+      .link:hover {
+        opacity: 1;
+      }
+      .node:hover,
+      .dropout-node {
+        cursor: pointer;
+      }
+    }
+  }
+}
