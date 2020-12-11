@@ -1,4 +1,4 @@
-# User Flow using D3 sankey in Angular 10
+# User Flow with dropouts using D3 sankey in Angular 10
 
 [![The MIT License](https://img.shields.io/badge/license-MIT-orange.svg?style=flat-square)](LICENSE)
 

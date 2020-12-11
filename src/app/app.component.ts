@@ -28,6 +28,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private userFlowService: UserFlowService
   ) {
     this.userFlowData = new UserFlow();
+    // creating window functions to interact with external js functions i.e. sankey chart
     window['ue'] = window['ue'] || {};
     window['ue']['userFlow'] = window['ue']['userFlow'] || {};
     window['ue']['userFlow'].publicFunc = this.publicFunc.bind(this);
@@ -43,7 +44,7 @@ export class AppComponent implements OnInit, OnDestroy {
     // call API
     this.userFlowService.fetchUserFlowData()
       .pipe(
-        delay(2000)
+        delay(1000)
       )
       .subscribe((data: any) => {
         console.log(data);
@@ -259,7 +260,7 @@ export class AppComponent implements OnInit, OnDestroy {
       };
     }
 
-    function formatInteraction(num: number) {
+    function formatInteraction(num: number): string {
       const lastDigit = num % 10;
       switch (lastDigit) {
         case 1:
@@ -273,15 +274,15 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     }
 
-    function fnOnDropOutLinkClicked(dropOutLink: any) {
+    function fnOnDropOutLinkClicked(dropOutLink: any): void {
       window['ue']['userFlow'].publicFunc(dropOutLink.target);
     }
 
-    function fnOnNodeClicked(clickedNode: any) {
+    function fnOnNodeClicked(clickedNode: any): void {
       window['ue']['userFlow'].publicFunc(clickedNode);
     }
 
-    function truncateText(value: any, limit: number) {
+    function truncateText(value: any, limit: number): string {
       return value ? (value.length > limit) ? String(value).substr(0, limit - 1) + '...' : value : '';
     }
 
