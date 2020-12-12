@@ -858,14 +858,14 @@ export class UserFlowService {
   ];
   // end of test data
 
+  /**
+   * API service stub
+   */
   fetchUserFlowData(): Observable<any> {
     return new Observable(observer => {
       const reqData = {
-        resource: [],
-      };
-      reqData.resource.push({
         userFlowData: this.data
-      });
+      };
 
       observer.next(reqData);
       observer.complete();

@@ -47,9 +47,8 @@ export class AppComponent implements OnInit, OnDestroy {
         delay(1000)
       )
       .subscribe((data: any) => {
-        console.log(data);
-        this.userFlowData.nodes = data['resource'][0]['userFlowData']['nodes'];
-        this.userFlowData.links = data['resource'][0]['userFlowData']['links'];
+        this.userFlowData.nodes = data['userFlowData']['nodes'];
+        this.userFlowData.links = data['userFlowData']['links'];
         if (this.userFlowData.nodes.length) {
           this.drawChart(this.userFlowData);
         }
@@ -61,6 +60,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   drawChart(chartData: UserFlow): void {
+    // creating a temporary sankey plot to identify the interactions for height and width calculation of viewport
     const sankeyTemp = d3Sankey.sankey()
       .nodeWidth(15)
       .nodePadding(10)
@@ -68,10 +68,10 @@ export class AppComponent implements OnInit, OnDestroy {
       .extent([[1, 1], [100, 100]]);
     sankeyTemp(chartData);
     const iterTemp = d3.nest()
-      .key(function (d: any) { return d.x0; })
+      .key((d: any) => d.x0)
       .sortKeys(d3.ascending)
       .entries(chartData.nodes)
-      .sort(function (a: any, b: any) { return a.key - b.key; });
+      .sort((a: any, b: any) => a.key - b.key);
     if (iterTemp.length && iterTemp[iterTemp.length - 1].values[0].name.toLowerCase() === DROPOUT_NODE_NAME) {
       iterTemp.pop();
     }
@@ -80,6 +80,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const height = 500;
     const width = interactions * 320;
 
+    // plotting the sankey chart
     const sankey = d3Sankey.sankey()
       .nodeWidth(15)
       .nodePadding(10)
@@ -88,20 +89,20 @@ export class AppComponent implements OnInit, OnDestroy {
     sankey(chartData);
 
     const iter = d3.nest()
-      .key(function (d: any) { return d.x0; })
+      .key((d: any) => d.x0)
       .sortKeys(d3.ascending)
       .entries(chartData.nodes)
-      .map(function (d: any) { return d.key; })
-      .sort(function (a: any, b: any) { return a - b; });
+      .map((d: any) => d.key)
+      .sort((a: any, b: any) => a - b);
 
     const formatNumber = d3.format(',.0f');
-    const format = function (d: any): string { return formatNumber(d) + ' session(s)'; };
+    const format = (d: any): string => formatNumber(d) + ' session(s)';
     const color = d3.scaleOrdinal(d3.schemeCategory10);
 
     // reset data
     d3.selectAll('#sankey > *').remove();
 
-    // add svg for header
+    // add svg for header for showing interaction counts
     const svgHeader = d3.select('#sankey').append('svg');
     if (interactions <= 4) {
       svgHeader
@@ -118,8 +119,8 @@ export class AppComponent implements OnInit, OnDestroy {
       .append('text')
       .attr('font-size', 10)
       .attr('font-weight', 'bold')
-      .attr('transform', function (d, i) { return 'translate(' + d + ', 10)'; })
-      .text(function (d, i) {
+      .attr('transform', (d, i) => 'translate(' + d + ', 10)')
+      .text((d, i) => {
         if (i < interactions) {
           return formatInteraction(i + 1) + ' interaction';
         } else { return ''; }
@@ -131,25 +132,21 @@ export class AppComponent implements OnInit, OnDestroy {
       .attr('height', height)
       .attr('viewbox', `0 0 ${width} ${height}`);
 
-    // add in the links
+    // add in the links (excluding the dropouts, coz it will become node)
     const link = svg.append('g')
       .selectAll('.link')
       .data(chartData.links)
       .enter()
-      .filter(function (l: any) {
-        return l.target.name.toLowerCase() !== DROPOUT_NODE_NAME;
-      })
+      .filter((l: any) => l.target.name.toLowerCase() !== DROPOUT_NODE_NAME)
       .append('path')
       .attr('d', d3Sankey.sankeyLinkHorizontal()
       )
       .attr('fill', 'none')
       .attr('stroke', '#9e9e9e')
       .style('opacity', '0.7')
-      .attr('stroke-width', function (d: any) {
-        return Math.max(1, d.width);
-      })
+      .attr('stroke-width', (d: any) => Math.max(1, d.width))
       .attr('class', 'link')
-      .sort(function (a: any, b: any) {
+      .sort((a: any, b: any) => {
         if (a.target.name.toLowerCase() === DROPOUT_NODE_NAME) {
           return -1;
         } else if (b.target.name.toLowerCase() === DROPOUT_NODE_NAME) {
@@ -160,23 +157,18 @@ export class AppComponent implements OnInit, OnDestroy {
       })
       ;
 
+    // plotting dropout nodes
     const dropLink = svg.append('g')
       .selectAll('.link')
       .data(chartData.links)
       .enter()
-      .filter(function (l: any) {
-        return l.target.name.toLowerCase() === DROPOUT_NODE_NAME;
-      })
-
+      .filter((l: any) => l.target.name.toLowerCase() === DROPOUT_NODE_NAME)
       .append('rect')
-      .attr('x', function (d: any) {
-        return d.source.x1;
-      })
-      .attr('y', function (d: any) {
+      .attr('x', (d: any) => d.source.x1)
+      .attr('y', (d: any) => {
         if (d.source.drop > 0) {
           let totalWidth = 0;
-          for (let index = 0; index < d.source.sourceLinks.length; index++) {
-            const elm = d.source.sourceLinks[index];
+          for (const elm of d.source.sourceLinks) {
             if (elm.target.name.toLowerCase() === DROPOUT_NODE_NAME) {
               break;
             } else if (elm.value >= d.source.drop && elm.target.name.toLowerCase() !== DROPOUT_NODE_NAME) {
@@ -188,78 +180,72 @@ export class AppComponent implements OnInit, OnDestroy {
           return d.source.y0;
         }
       })
-      .attr('height', function (d: any) { return Math.abs(d.target.y0 - d.target.y1); })
-      .attr('width', function (d: any) { return sankey.nodeWidth() + 3; })
+      .attr('height', (d: any) => Math.abs(d.target.y0 - d.target.y1))
+      .attr('width', (d: any) => sankey.nodeWidth() + 3)
       .attr('fill', '#f44336')
       .attr('stroke', '#f44336')
       .attr('class', 'dropout-node')
-      .on('click', function (l: any) {
-        console.log('dropout clicl', l);
+      .on('click', (l: any) => {
         fnOnDropOutLinkClicked(l);
       });
 
     dropLink.append('title')
-      .text(function (d: any) {
-        return d.source.name + '\n' +
-          'Dropouts ' + format(d.value);
-      });
+      .text((d: any) => d.source.name + '\n' +
+        'Dropouts ' + format(d.value));
 
     // add the link titles
     link.append('title')
-      .text(function (d: any) {
-        return d.source.name + ' → ' +
-          d.target.name + '\n' + format(d.value);
-      });
+      .text((d: any) => d.source.name + ' → ' +
+        d.target.name + '\n' + format(d.value));
 
+    // plotting the nodes
     const node = svg.append('g').selectAll('.node')
       .data(chartData.nodes)
       .enter().append('g')
       .attr('class', 'node')
       .on('mouseover', fade(1))
       .on('mouseout', fade(0.7))
-      .on('click', function (d) {
-        console.log('node clicked', d);
+      .on('click', (d) => {
         fnOnNodeClicked(d);
       });
 
     node.append('rect')
-      .filter(function (d: any) {
-        return d.name.toLowerCase() !== DROPOUT_NODE_NAME;
-      })
-      .attr('x', function (d: any) { return d.x0; })
-      .attr('y', function (d: any) { return d.y0; })
-      .attr('height', function (d: any) { return d.y1 - d.y0; })
-      .attr('width', function (d: any) { return d.x1 - d.x0; })
+      .filter((d: any) => d.name.toLowerCase() !== DROPOUT_NODE_NAME)
+      .attr('x', (d: any) => d.x0)
+      .attr('y', (d: any) => d.y0)
+      .attr('height', (d: any) => d.y1 - d.y0)
+      .attr('width', (d: any) => d.x1 - d.x0)
       .attr('fill', '#2196f3')
       .append('title')
-      .text(function (d: any) { return d.name + '\n' + format(d.value); });
+      .text((d: any) => d.name + '\n' + format(d.value));
 
     node.append('text')
-      .filter(function (d: any) {
-        return d.name.toLowerCase() !== DROPOUT_NODE_NAME;
-      })
-      .attr('x', function (d: any) { return d.x1 + 20; })
-      .attr('y', function (d: any) { return (d.y1 + d.y0) / 2; })
+      .filter((d: any) => d.name.toLowerCase() !== DROPOUT_NODE_NAME)
+      .attr('x', (d: any) => d.x1 + 20)
+      .attr('y', (d: any) => (d.y1 + d.y0) / 2)
       .attr('dy', '0.35em')
       .attr('font-size', 10)
       .attr('font-family', 'Roboto')
       .attr('text-anchor', 'end')
-      .text(function (d: any) { return truncateText(d.name, 20); })
+      .text((d: any) => truncateText(d.name, 20))
       .attr('text-anchor', 'start')
       .append('title')
-      .text(function (d: any) { return d.name; });
+      .text((d: any) => d.name);
 
-    // miscellaneous functions
-    function fade(opacity: any) {
-      return function (g, i) {
+    /* miscellaneous functions */
+
+    // function to fade other links on hove of a node
+    function fade(opacity: any): any {
+      return (g, i) => {
 
         svg.selectAll('.link')
-          .filter(function (d: any) { return d.source.node !== chartData.nodes[i].node && d.target.node !== chartData.nodes[i].node; })
+          .filter((d: any) => d.source.node !== chartData.nodes[i].node && d.target.node !== chartData.nodes[i].node)
           .transition()
           .style('opacity', opacity);
       };
     }
 
+    // function to format the interaction number
     function formatInteraction(num: number): string {
       const lastDigit = num % 10;
       switch (lastDigit) {
@@ -274,27 +260,34 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     }
 
+    // function gets called on click of a dropout node
     function fnOnDropOutLinkClicked(dropOutLink: any): void {
-      window['ue']['userFlow'].publicFunc(dropOutLink.target);
+      window['ue']['userFlow'].publicFunc(dropOutLink.target, true);
     }
 
+    // function gets called on click of a node
     function fnOnNodeClicked(clickedNode: any): void {
       window['ue']['userFlow'].publicFunc(clickedNode);
     }
 
+    // common util function to truncate text
     function truncateText(value: any, limit: number): string {
       return value ? (value.length > limit) ? String(value).substr(0, limit - 1) + '...' : value : '';
     }
 
   }
 
-  publicFunc(node: any): void {
-    this.ngZone.run(() => this.nodeClicked(node));
+  // window function that's called from D3 and internally calls angular function
+  publicFunc(node: any, isDropout = false): void {
+    this.ngZone.run(() => this.nodeClicked(node, isDropout));
   }
 
-  nodeClicked(node: any): void {
-    console.log('nodeClicked called', node);
-    window.scrollTo(0, 0);
+  nodeClicked(node: any, isDropout: boolean): void {
+    if (isDropout) {
+      console.log('dropout node clicked', node);
+    } else {
+      console.log('node clicked', node);
+    }
   }
 
 

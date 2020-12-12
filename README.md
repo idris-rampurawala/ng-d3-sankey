@@ -5,6 +5,12 @@
 > This project is a demonstration of creating user flow chart with dropouts using [D3 sankey](https://github.com/d3/d3-sankey) in Angular 10
 
 
+## Background
+D3-sankey is an open-source charting library to visualize the directed flow between nodes in an acyclic network.
+
+One key feature that I have implemented is ability to visalize user flows with dropout nodes (marked in red) integrated with Angular 10. Visit this [link](https://idris-rampurawala.github.io/ng-d3-sankey/) to see it in action!
+
+![Demo Image](https://res.cloudinary.com/idr/image/upload/fl_lossy,q_50/dev.to/user-flow-angular/user-flow-dropouts_okvqak.png)
 
 ## Installation
 
