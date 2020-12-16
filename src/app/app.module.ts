@@ -1,5 +1,6 @@
-import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { HttpClientModule } from '@angular/common/http';
+import { BrowserModule } from '@angular/platform-browser';
 
 // third party
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
@@ -17,6 +18,7 @@ import { UserFlowService } from './user-flow.service';
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     PerfectScrollbarModule
   ],
   providers: [UserFlowService],

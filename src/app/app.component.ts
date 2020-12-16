@@ -46,9 +46,9 @@ export class AppComponent implements OnInit, OnDestroy {
       .pipe(
         delay(1000)
       )
-      .subscribe((data: any) => {
-        this.userFlowData.nodes = data['userFlowData']['nodes'];
-        this.userFlowData.links = data['userFlowData']['links'];
+      .subscribe((data: UserFlow) => {
+        this.userFlowData.nodes = data.nodes;
+        this.userFlowData.links = data.links;
         if (this.userFlowData.nodes.length) {
           this.drawChart(this.userFlowData);
         }
