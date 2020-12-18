@@ -12,6 +12,7 @@ One key feature that I have implemented is ability to visalize user flows with d
 
 ![Demo Image](https://res.cloudinary.com/idr/image/upload/fl_lossy,q_50/dev.to/user-flow-angular/user-flow-dropouts_okvqak.png)
 
+You can find an in-depth article on this implementation [here](https://dev.to/idrisrampurawala/user-flow-with-dropouts-using-d3-sankey-in-angular-10-2m5j).
 ## Installation
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 10.0.2.
